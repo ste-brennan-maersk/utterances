@@ -160,7 +160,7 @@ var ConfigurationComponent = function () {
         theme = _preferredTheme.preferredTheme;
       }
 
-      themeStylesheet.href = "/stylesheets/themes/" + theme + "/index.css";
+      themeStylesheet.href = "/stylesheets/themes/".concat(theme, "/index.css");
       var message = {
         type: 'set-theme',
         theme: theme
@@ -197,11 +197,11 @@ var ConfigurationComponent = function () {
   };
 
   ConfigurationComponent.prototype.makeConfigScriptAttribute = function (name, value) {
-    return "<span class=\"pl-s1\">        <span class=\"pl-e\">" + name + "</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>" + value + "<span class=\"pl-pds\">\"</span></span></span>";
+    return "<span class=\"pl-s1\">        <span class=\"pl-e\">".concat(name, "</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>").concat(value, "<span class=\"pl-pds\">\"</span></span></span>");
   };
 
   ConfigurationComponent.prototype.makeConfigScript = function (attrs) {
-    return "<pre><span class=\"pl-s1\">&lt;<span class=\"pl-ent\">script</span> <span class=\"pl-e\">src</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>https://utteranc.es/client.js<span class=\"pl-pds\">\"</span></span></span>\n" + attrs + "\n<span class=\"pl-s1\">        <span class=\"pl-e\">async</span>&gt;</span>\n<span class=\"pl-s1\">&lt;/<span class=\"pl-ent\">script</span>&gt;</span></pre>";
+    return "<pre><span class=\"pl-s1\">&lt;<span class=\"pl-ent\">script</span> <span class=\"pl-e\">src</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>https://utteranc.es/client.js<span class=\"pl-pds\">\"</span></span></span>\n".concat(attrs, "\n<span class=\"pl-s1\">        <span class=\"pl-e\">async</span>&gt;</span>\n<span class=\"pl-s1\">&lt;/<span class=\"pl-ent\">script</span>&gt;</span></pre>");
   };
 
   ConfigurationComponent.prototype.copyTextToClipboard = function (text) {
@@ -229,4 +229,4 @@ var _configurationComponent = require("./configuration-component");
 
 document.querySelector('h2#configuration').insertAdjacentElement('afterend', new _configurationComponent.ConfigurationComponent().element);
 },{"./configuration-component":"configuration-component.ts"}]},{},["index.ts"], null)
-//# sourceMappingURL=/src.77de5100.js.map
+//# sourceMappingURL=/utterances/src.77de5100.js.map

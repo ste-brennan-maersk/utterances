@@ -149,7 +149,7 @@ function param(obj) {
 
   for (var name in obj) {
     if (obj.hasOwnProperty(name) && obj[name]) {
-      parts.push(encodeURIComponent(name) + "=" + encodeURIComponent(obj[name]));
+      parts.push("".concat(encodeURIComponent(name), "=").concat(encodeURIComponent(obj[name])));
     }
   }
 
@@ -193,7 +193,7 @@ function readPageAttributes() {
 
       if (['title', 'url', 'pathname', 'og:title'].indexOf(issueTerm) !== -1) {
         if (!params[issueTerm]) {
-          throw new Error("Unable to find \"" + issueTerm + "\" metadata.");
+          throw new Error("Unable to find \"".concat(issueTerm, "\" metadata."));
         }
 
         issueTerm = params[issueTerm];
@@ -203,7 +203,7 @@ function readPageAttributes() {
     issueNumber = +params['issue-number'];
 
     if (issueNumber.toString(10) !== params['issue-number']) {
-      throw new Error("issue-number is invalid. \"" + params['issue-number']);
+      throw new Error("issue-number is invalid. \"".concat(params['issue-number']));
     }
   } else {
     throw new Error('"issue-term" or "issue-number" must be specified.');
@@ -220,7 +220,7 @@ function readPageAttributes() {
   var matches = _repoRegex.default.exec(params.repo);
 
   if (matches === null) {
-    throw new Error("Invalid repo: \"" + params.repo + "\"");
+    throw new Error("Invalid repo: \"".concat(params.repo, "\""));
   }
 
   return {
@@ -247,7 +247,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.UTTERANCES_API = void 0;
-var UTTERANCES_API = 'https://api.utteranc.es';
+var UTTERANCES_API = 'https://utterances.ste-brennan-maersk.workers.dev';
 exports.UTTERANCES_API = UTTERANCES_API;
 },{}],"oauth.ts":[function(require,module,exports) {
 "use strict";
@@ -414,9 +414,9 @@ var token = {
 exports.token = token;
 
 function getLoginUrl(redirect_uri) {
-  return _utterancesApi.UTTERANCES_API + "/authorize?" + (0, _deparam.param)({
+  return "".concat(_utterancesApi.UTTERANCES_API, "/authorize?").concat((0, _deparam.param)({
     redirect_uri: redirect_uri
-  });
+  }));
 }
 
 function loadToken() {
@@ -433,7 +433,7 @@ function loadToken() {
             return [2, null];
           }
 
-          url = _utterancesApi.UTTERANCES_API + "/token";
+          url = "".concat(_utterancesApi.UTTERANCES_API, "/token");
           return [4, fetch(url, {
             method: 'POST',
             mode: 'cors',
@@ -478,18 +478,19 @@ function decodeBase64UTF8(encoded) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.setRepoContext = setRepoContext;
-exports.readRelNext = readRelNext;
-exports.loadJsonFile = loadJsonFile;
-exports.loadIssueByTerm = loadIssueByTerm;
-exports.loadIssueByNumber = loadIssueByNumber;
-exports.loadCommentsPage = loadCommentsPage;
-exports.loadUser = loadUser;
+exports.PAGE_SIZE = void 0;
 exports.createIssue = createIssue;
+exports.loadCommentsPage = loadCommentsPage;
+exports.loadIssueByNumber = loadIssueByNumber;
+exports.loadIssueByTerm = loadIssueByTerm;
+exports.loadJsonFile = loadJsonFile;
+exports.loadUser = loadUser;
 exports.postComment = postComment;
-exports.toggleReaction = toggleReaction;
+exports.reactionTypes = void 0;
+exports.readRelNext = readRelNext;
 exports.renderMarkdown = renderMarkdown;
-exports.reactionTypes = exports.PAGE_SIZE = void 0;
+exports.setRepoContext = setRepoContext;
+exports.toggleReaction = toggleReaction;
 
 var _oauth = require("./oauth");
 
@@ -665,7 +666,7 @@ function githubRequest(relativeUrl, init) {
   request.headers.set('Accept', GITHUB_ENCODING__REACTIONS_PREVIEW);
 
   if (_oauth.token.value !== null) {
-    request.headers.set('Authorization', "token " + _oauth.token.value);
+    request.headers.set('Authorization', "token ".concat(_oauth.token.value));
   }
 
   return request;
@@ -699,7 +700,7 @@ function processRateLimit(response) {
     resetDate.setUTCSeconds(rate.reset);
     var mins = Math.round((resetDate.getTime() - new Date().getTime()) / 1000 / 60);
     var apiType = isSearch ? 'search API' : 'non-search APIs';
-    console.warn("Rate limit exceeded for " + apiType + ". Resets in " + mins + " minute" + (mins === 1 ? '' : 's') + ".");
+    console.warn("Rate limit exceeded for ".concat(apiType, ". Resets in ").concat(mins, " minute").concat(mins === 1 ? '' : 's', "."));
   }
 }
 
@@ -749,7 +750,7 @@ function loadJsonFile(path, html) {
     html = false;
   }
 
-  var request = githubRequest("repos/" + owner + "/" + repo + "/contents/" + path + "?ref=" + branch);
+  var request = githubRequest("repos/".concat(owner, "/").concat(repo, "/contents/").concat(path, "?ref=").concat(branch));
 
   if (html) {
     request.headers.set('accept', GITHUB_ENCODING__HTML);
@@ -757,11 +758,11 @@ function loadJsonFile(path, html) {
 
   return githubFetch(request).then(function (response) {
     if (response.status === 404) {
-      throw new Error("Repo \"" + owner + "/" + repo + "\" does not have a file named \"" + path + "\" in the \"" + branch + "\" branch.");
+      throw new Error("Repo \"".concat(owner, "/").concat(repo, "\" does not have a file named \"").concat(path, "\" in the \"").concat(branch, "\" branch."));
     }
 
     if (!response.ok) {
-      throw new Error("Error fetching " + path + ".");
+      throw new Error("Error fetching ".concat(path, "."));
     }
 
     return html ? response.text() : response.json();
@@ -777,8 +778,8 @@ function loadJsonFile(path, html) {
 }
 
 function loadIssueByTerm(term) {
-  var q = "\"" + term + "\" type:issue in:title repo:" + owner + "/" + repo;
-  var request = githubRequest("search/issues?q=" + encodeURIComponent(q) + "&sort=created&order=asc");
+  var q = "\"".concat(term, "\" type:issue in:title repo:").concat(owner, "/").concat(repo);
+  var request = githubRequest("search/issues?q=".concat(encodeURIComponent(q), "&sort=created&order=asc"));
   return githubFetch(request).then(function (response) {
     if (!response.ok) {
       throw new Error('Error fetching issue via search.');
@@ -791,7 +792,7 @@ function loadIssueByTerm(term) {
     }
 
     if (results.total_count > 1) {
-      console.warn("Multiple issues match \"" + q + "\".");
+      console.warn("Multiple issues match \"".concat(q, "\"."));
     }
 
     term = term.toLowerCase();
@@ -804,13 +805,13 @@ function loadIssueByTerm(term) {
       }
     }
 
-    console.warn("Issue search results do not contain an issue with title matching \"" + term + "\". Using first result.");
+    console.warn("Issue search results do not contain an issue with title matching \"".concat(term, "\". Using first result."));
     return results.items[0];
   });
 }
 
 function loadIssueByNumber(issueNumber) {
-  var request = githubRequest("repos/" + owner + "/" + repo + "/issues/" + issueNumber);
+  var request = githubRequest("repos/".concat(owner, "/").concat(repo, "/issues/").concat(issueNumber));
   return githubFetch(request).then(function (response) {
     if (!response.ok) {
       throw new Error('Error fetching issue via issue number.');
@@ -821,9 +822,9 @@ function loadIssueByNumber(issueNumber) {
 }
 
 function commentsRequest(issueNumber, page) {
-  var url = "repos/" + owner + "/" + repo + "/issues/" + issueNumber + "/comments?page=" + page + "&per_page=" + PAGE_SIZE;
+  var url = "repos/".concat(owner, "/").concat(repo, "/issues/").concat(issueNumber, "/comments?page=").concat(page, "&per_page=").concat(PAGE_SIZE);
   var request = githubRequest(url);
-  var accept = GITHUB_ENCODING__HTML_JSON + "," + GITHUB_ENCODING__REACTIONS_PREVIEW;
+  var accept = "".concat(GITHUB_ENCODING__HTML_JSON, ",").concat(GITHUB_ENCODING__REACTIONS_PREVIEW);
   request.headers.set('Accept', accept);
   return request;
 }
@@ -854,16 +855,16 @@ function loadUser() {
 }
 
 function createIssue(issueTerm, documentUrl, title, description, label) {
-  var url = _utterancesApi.UTTERANCES_API + "/repos/" + owner + "/" + repo + "/issues" + (label ? "?label=" + encodeURIComponent(label) : '');
+  var url = "".concat(_utterancesApi.UTTERANCES_API, "/repos/").concat(owner, "/").concat(repo, "/issues").concat(label ? "?label=".concat(encodeURIComponent(label)) : '');
   var request = new Request(url, {
     method: 'POST',
     body: JSON.stringify({
       title: issueTerm,
-      body: "# " + title + "\n\n" + description + "\n\n[" + documentUrl + "](" + documentUrl + ")"
+      body: "# ".concat(title, "\n\n").concat(description, "\n\n[").concat(documentUrl, "](").concat(documentUrl, ")")
     })
   });
   request.headers.set('Accept', GITHUB_ENCODING__REACTIONS_PREVIEW);
-  request.headers.set('Authorization', "token " + _oauth.token.value);
+  request.headers.set('Authorization', "token ".concat(_oauth.token.value));
   return fetch(request).then(function (response) {
     if (!response.ok) {
       throw new Error('Error creating comments container issue');
@@ -874,7 +875,7 @@ function createIssue(issueTerm, documentUrl, title, description, label) {
 }
 
 function postComment(issueNumber, markdown) {
-  var url = "repos/" + owner + "/" + repo + "/issues/" + issueNumber + "/comments";
+  var url = "repos/".concat(owner, "/").concat(repo, "/issues/").concat(issueNumber, "/comments");
   var body = JSON.stringify({
     body: markdown
   });
@@ -882,7 +883,7 @@ function postComment(issueNumber, markdown) {
     method: 'POST',
     body: body
   });
-  var accept = GITHUB_ENCODING__HTML_JSON + "," + GITHUB_ENCODING__REACTIONS_PREVIEW;
+  var accept = "".concat(GITHUB_ENCODING__HTML_JSON, ",").concat(GITHUB_ENCODING__REACTIONS_PREVIEW);
   request.headers.set('Accept', accept);
   return githubFetch(request).then(function (response) {
     if (!response.ok) {
@@ -938,7 +939,7 @@ function toggleReaction(url, content) {
             throw new Error('expected "201 reaction created" or "200 reaction already exists"');
           }
 
-          deleteRequest = githubRequest("reactions/" + reaction.id, {
+          deleteRequest = githubRequest("reactions/".concat(reaction.id), {
             method: 'DELETE'
           });
           deleteRequest.headers.set('Accept', GITHUB_ENCODING__REACTIONS_PREVIEW);
@@ -960,7 +961,7 @@ function renderMarkdown(text) {
   var body = JSON.stringify({
     text: text,
     mode: 'gfm',
-    context: owner + "/" + repo
+    context: "".concat(owner, "/").concat(repo)
   });
   return githubFetch(githubRequest('markdown', {
     method: 'POST',
@@ -1001,10 +1002,10 @@ function timeAgo(current, value) {
   var units = Math.round(elapsed / divisor);
 
   if (units > 3 && i === thresholds.length - 2) {
-    return "on " + value.toLocaleDateString(undefined, formatOptions);
+    return "on ".concat(value.toLocaleDateString(undefined, formatOptions));
   }
 
-  return units === 1 ? (text === 'hour' ? 'an' : 'a') + " " + text + " ago" : units + " " + text + "s ago";
+  return units === 1 ? "".concat(text === 'hour' ? 'an' : 'a', " ").concat(text, " ago") : "".concat(units, " ").concat(text, "s ago");
 }
 },{}],"measure.ts":[function(require,module,exports) {
 "use strict";
@@ -1012,8 +1013,8 @@ function timeAgo(current, value) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.startMeasuring = startMeasuring;
 exports.scheduleMeasure = scheduleMeasure;
+exports.startMeasuring = startMeasuring;
 var hostOrigin;
 
 function startMeasuring(origin) {
@@ -1055,11 +1056,11 @@ function scheduleMeasure() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getReactionHtml = getReactionHtml;
 exports.enableReactions = enableReactions;
+exports.getReactionHtml = getReactionHtml;
 exports.getReactionsMenuHtml = getReactionsMenuHtml;
 exports.getSignInToReactMenuHtml = getSignInToReactMenuHtml;
-exports.reactionEmoji = exports.reactionNames = void 0;
+exports.reactionNames = exports.reactionEmoji = void 0;
 
 var _github = require("./github");
 
@@ -1236,7 +1237,7 @@ var reactionEmoji = {
 exports.reactionEmoji = reactionEmoji;
 
 function getReactionHtml(url, reaction, disabled, count) {
-  return "\n  <button\n    reaction\n    type=\"submit\"\n    action=\"javascript:\"\n    formaction=\"" + url + "\"\n    class=\"btn BtnGroup-item reaction-button\"\n    value=\"" + reaction + "\"\n    aria-label=\"Toggle " + reactionNames[reaction] + " reaction\"\n    reaction-count=\"" + count + "\"\n    " + (disabled ? 'disabled' : '') + ">\n    " + reactionEmoji[reaction] + "\n  </button>";
+  return "\n  <button\n    reaction\n    type=\"submit\"\n    action=\"javascript:\"\n    formaction=\"".concat(url, "\"\n    class=\"btn BtnGroup-item reaction-button\"\n    value=\"").concat(reaction, "\"\n    aria-label=\"Toggle ").concat(reactionNames[reaction], " reaction\"\n    reaction-count=\"").concat(count, "\"\n    ").concat(disabled ? 'disabled' : '', ">\n    ").concat(reactionEmoji[reaction], "\n  </button>");
 }
 
 function enableReactions(authenticated) {
@@ -1278,7 +1279,7 @@ function enableReactions(authenticated) {
 
           case 1:
             deleted = _a.sent().deleted;
-            selector = "button[reaction][formaction=\"" + url + "\"][value=\"" + id + "\"],[reaction-count][reaction-url=\"" + url + "\"]";
+            selector = "button[reaction][formaction=\"".concat(url, "\"][value=\"").concat(id, "\"],[reaction-count][reaction-url=\"").concat(url, "\"]");
             elements = Array.from(document.querySelectorAll(selector));
             delta = deleted ? -1 : 1;
 
@@ -1303,16 +1304,16 @@ function getReactionsMenuHtml(url, align) {
   var alignmentClass = align === 'center' ? '' : 'Popover-message--top-right';
 
   var getButtonAndSpan = function getButtonAndSpan(id) {
-    return getReactionHtml(url, id, false, 0) + ("<span class=\"reaction-name\" aria-hidden=\"true\">" + reactionNames[id] + "</span>");
+    return getReactionHtml(url, id, false, 0) + "<span class=\"reaction-name\" aria-hidden=\"true\">".concat(reactionNames[id], "</span>");
   };
 
-  return "\n  <details class=\"details-overlay details-popover reactions-popover\">\n    <summary " + (align === 'center' ? 'tabindex="-1"' : '') + ">" + addReactionSvgs + "</summary>\n    <div class=\"Popover\" style=\"" + position + "\">\n      <form class=\"Popover-message " + alignmentClass + " box-shadow-large\" action=\"javascript:\">\n        <span class=\"reaction-name\">Pick your reaction</span>\n        <div class=\"BtnGroup\">\n          " + _github.reactionTypes.slice(0, 4).map(getButtonAndSpan).join('') + "\n        </div>\n        <div class=\"BtnGroup\">\n          " + _github.reactionTypes.slice(4).map(getButtonAndSpan).join('') + "\n        </div>\n      </form>\n    </div>\n  </details>";
+  return "\n  <details class=\"details-overlay details-popover reactions-popover\">\n    <summary ".concat(align === 'center' ? 'tabindex="-1"' : '', ">").concat(addReactionSvgs, "</summary>\n    <div class=\"Popover\" style=\"").concat(position, "\">\n      <form class=\"Popover-message ").concat(alignmentClass, " box-shadow-large\" action=\"javascript:\">\n        <span class=\"reaction-name\">Pick your reaction</span>\n        <div class=\"BtnGroup\">\n          ").concat(_github.reactionTypes.slice(0, 4).map(getButtonAndSpan).join(''), "\n        </div>\n        <div class=\"BtnGroup\">\n          ").concat(_github.reactionTypes.slice(4).map(getButtonAndSpan).join(''), "\n        </div>\n      </form>\n    </div>\n  </details>");
 }
 
 function getSignInToReactMenuHtml(align) {
   var position = align === 'center' ? 'left: 50%;transform: translateX(-50%)' : 'right:6px';
   var alignmentClass = align === 'center' ? '' : 'Popover-message--top-right';
-  return "\n  <details class=\"details-overlay details-popover reactions-popover\">\n    <summary aria-label=\"Reactions Menu\">" + addReactionSvgs + "</summary>\n    <div class=\"Popover\" style=\"" + position + "\">\n      <div class=\"Popover-message " + alignmentClass + " box-shadow-large\" style=\"padding: 16px\">\n        <span><a href=\"" + (0, _oauth.getLoginUrl)(_pageAttributes.pageAttributes.url) + "\" target=\"_top\">Sign in</a> to add your reaction.</span>\n      </div>\n    </div>\n  </details>";
+  return "\n  <details class=\"details-overlay details-popover reactions-popover\">\n    <summary aria-label=\"Reactions Menu\">".concat(addReactionSvgs, "</summary>\n    <div class=\"Popover\" style=\"").concat(position, "\">\n      <div class=\"Popover-message ").concat(alignmentClass, " box-shadow-large\" style=\"padding: 16px\">\n        <span><a href=\"").concat((0, _oauth.getLoginUrl)(_pageAttributes.pageAttributes.url), "\" target=\"_top\">Sign in</a> to add your reaction.</span>\n      </div>\n    </div>\n  </details>");
 }
 
 var addReactionSvgs = "<svg class=\"octicon\" style=\"margin-right:3px\" viewBox=\"0 0 7 16\" version=\"1.1\" width=\"7\" height=\"16\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M4 4H3v3H0v1h3v3h1V8h3V7H4V4z\"></path></svg><svg class=\"octicon\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm4.81 12.81a6.72 6.72 0 0 1-2.17 1.45c-.83.36-1.72.53-2.64.53-.92 0-1.81-.17-2.64-.53-.81-.34-1.55-.83-2.17-1.45a6.773 6.773 0 0 1-1.45-2.17A6.59 6.59 0 0 1 1.21 8c0-.92.17-1.81.53-2.64.34-.81.83-1.55 1.45-2.17.62-.62 1.36-1.11 2.17-1.45A6.59 6.59 0 0 1 8 1.21c.92 0 1.81.17 2.64.53.81.34 1.55.83 2.17 1.45.62.62 1.11 1.36 1.45 2.17.36.83.53 1.72.53 2.64 0 .92-.17 1.81-.53 2.64-.34.81-.83 1.55-1.45 2.17zM4 6.8v-.59c0-.66.53-1.19 1.2-1.19h.59c.66 0 1.19.53 1.19 1.19v.59c0 .67-.53 1.2-1.19 1.2H5.2C4.53 8 4 7.47 4 6.8zm5 0v-.59c0-.66.53-1.19 1.2-1.19h.59c.66 0 1.19.53 1.19 1.19v.59c0 .67-.53 1.2-1.19 1.2h-.59C9.53 8 9 7.47 9 6.8zm4 3.2c-.72 1.88-2.91 3-5 3s-4.28-1.13-5-3c-.14-.39.23-1 .66-1h8.59c.41 0 .89.61.75 1z\"></path></svg>";
@@ -1322,8 +1323,8 @@ var addReactionSvgs = "<svg class=\"octicon\" style=\"margin-right:3px\" viewBox
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.processRenderedMarkdown = processRenderedMarkdown;
 exports.CommentComponent = void 0;
+exports.processRenderedMarkdown = processRenderedMarkdown;
 
 var _github = require("./github");
 
@@ -1380,9 +1381,9 @@ var CommentComponent = function () {
       }
     }
 
-    this.element.innerHTML = "\n      <a class=\"avatar\" href=\"" + user.html_url + "\" target=\"_blank\" tabindex=\"-1\">\n        <img alt=\"@" + user.login + "\" height=\"44\" width=\"44\"\n              src=\"" + user.avatar_url + avatarArgs + "\">\n      </a>\n      <div class=\"comment\">\n        <header class=\"comment-header\">\n          <span class=\"comment-meta\">\n            <a class=\"text-link\" href=\"" + user.html_url + "\" target=\"_blank\"><strong>" + user.login + "</strong></a>\n            commented\n            <a class=\"text-link\" href=\"" + html_url + "\" target=\"_blank\">" + (0, _timeAgo.timeAgo)(Date.now(), new Date(created_at)) + "</a>\n          </span>\n          <div class=\"comment-actions\">\n            " + (association ? "<span class=\"author-association-badge\">" + association + "</span>" : '') + "\n            " + headerReactionsMenu + "\n          </div>\n        </header>\n        <div class=\"markdown-body markdown-body-scrollable\">\n          " + body_html + "\n        </div>\n        <div class=\"comment-footer\" reaction-count=\"" + reactionCount + "\" reaction-url=\"" + reactions.url + "\">\n          <form class=\"reaction-list BtnGroup\" action=\"javascript:\">\n            " + _github.reactionTypes.map(function (id) {
+    this.element.innerHTML = "\n      <a class=\"avatar\" href=\"".concat(user.html_url, "\" target=\"_blank\" tabindex=\"-1\">\n        <img alt=\"@").concat(user.login, "\" height=\"44\" width=\"44\"\n              src=\"").concat(user.avatar_url).concat(avatarArgs, "\">\n      </a>\n      <div class=\"comment\">\n        <header class=\"comment-header\">\n          <span class=\"comment-meta\">\n            <a class=\"text-link\" href=\"").concat(user.html_url, "\" target=\"_blank\"><strong>").concat(user.login, "</strong></a>\n            commented\n            <a class=\"text-link\" href=\"").concat(html_url, "\" target=\"_blank\">").concat((0, _timeAgo.timeAgo)(Date.now(), new Date(created_at)), "</a>\n          </span>\n          <div class=\"comment-actions\">\n            ").concat(association ? "<span class=\"author-association-badge\">".concat(association, "</span>") : '', "\n            ").concat(headerReactionsMenu, "\n          </div>\n        </header>\n        <div class=\"markdown-body markdown-body-scrollable\">\n          ").concat(body_html, "\n        </div>\n        <div class=\"comment-footer\" reaction-count=\"").concat(reactionCount, "\" reaction-url=\"").concat(reactions.url, "\">\n          <form class=\"reaction-list BtnGroup\" action=\"javascript:\">\n            ").concat(_github.reactionTypes.map(function (id) {
       return (0, _reactions.getReactionHtml)(reactions.url, id, !currentUser || locked, reactions[id]);
-    }).join('') + "\n          </form>\n          " + footerReactionsMenu + "\n        </div>\n      </div>";
+    }).join(''), "\n          </form>\n          ").concat(footerReactionsMenu, "\n        </div>\n      </div>");
     var markdownBody = this.element.querySelector('.markdown-body');
     var emailToggle = markdownBody.querySelector('.email-hidden-toggle a');
 
@@ -1512,7 +1513,7 @@ var TimelineComponent = function () {
     var insertAfterElement = this.timeline.find(function (x) {
       return x.comment.id >= insertAfter.id;
     }).element;
-    insertAfterElement.insertAdjacentHTML('afterend', "\n      <div class=\"page-loader\">\n        <div class=\"zigzag\"></div>\n        <button type=\"button\" class=\"btn btn-outline btn-large\">\n          " + count + " hidden items<br/>\n          <span>Load more...</span>\n        </button>\n      </div>\n    ");
+    insertAfterElement.insertAdjacentHTML('afterend', "\n      <div class=\"page-loader\">\n        <div class=\"zigzag\"></div>\n        <button type=\"button\" class=\"btn btn-outline btn-large\">\n          ".concat(count, " hidden items<br/>\n          <span>Load more...</span>\n        </button>\n      </div>\n    "));
     var element = insertAfterElement.nextElementSibling;
     var button = element.lastElementChild;
     var statusSpan = button.lastElementChild;
@@ -1530,7 +1531,7 @@ var TimelineComponent = function () {
   };
 
   TimelineComponent.prototype.renderCount = function () {
-    this.countAnchor.textContent = this.count + " Comment" + (this.count === 1 ? '' : 's');
+    this.countAnchor.textContent = "".concat(this.count, " Comment").concat(this.count === 1 ? '' : 's');
   };
 
   return TimelineComponent;
@@ -1748,7 +1749,7 @@ var __generator = void 0 && (void 0).__generator || function (thisArg, body) {
 };
 
 var anonymousAvatar = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 16\" version=\"1.1\"><path fill=\"rgb(179,179,179)\" fill-rule=\"evenodd\" d=\"M8 10.5L9 14H5l1-3.5L5.25 9h3.5L8 10.5zM10 6H4L2 7h10l-2-1zM9 2L7 3 5 2 4 5h6L9 2zm4.03 7.75L10 9l1 2-2 3h3.22c.45 0 .86-.31.97-.75l.56-2.28c.14-.53-.19-1.08-.72-1.22zM4 9l-3.03.75c-.53.14-.86.69-.72 1.22l.56 2.28c.11.44.52.75.97.75H5l-2-3 1-2z\"></path></svg>";
-var anonymousAvatarUrl = "data:image/svg+xml;base64," + btoa(anonymousAvatar);
+var anonymousAvatarUrl = "data:image/svg+xml;base64,".concat(btoa(anonymousAvatar));
 var nothingToPreview = 'Nothing to preview';
 
 var NewCommentComponent = function () {
@@ -1767,7 +1768,7 @@ var NewCommentComponent = function () {
       _this.submitButton.disabled = isWhitespace;
 
       if (_this.textarea.scrollHeight < 450 && _this.textarea.offsetHeight < _this.textarea.scrollHeight) {
-        _this.textarea.style.height = _this.textarea.scrollHeight + "px";
+        _this.textarea.style.height = "".concat(_this.textarea.scrollHeight, "px");
         (0, _measure.scheduleMeasure)();
       }
 
@@ -1853,7 +1854,7 @@ var NewCommentComponent = function () {
 
     this.element = document.createElement('article');
     this.element.classList.add('timeline-comment');
-    this.element.innerHTML = "\n      <a class=\"avatar\" target=\"_blank\" tabindex=\"-1\">\n        <img height=\"44\" width=\"44\">\n      </a>\n      <form class=\"comment\" accept-charset=\"UTF-8\" action=\"javascript:\">\n        <header class=\"new-comment-header tabnav\">\n          <div class=\"tabnav-tabs\" role=\"tablist\">\n            <button type=\"button\" class=\"tabnav-tab tab-write\"\n                    role=\"tab\" aria-selected=\"true\">\n              Write\n            </button>\n            <button type=\"button\" class=\"tabnav-tab tab-preview\"\n                    role=\"tab\">\n              Preview\n            </button>\n          </div>\n        </header>\n        <div class=\"comment-body\">\n          <textarea class=\"form-control\" placeholder=\"Leave a comment\" aria-label=\"comment\"></textarea>\n          <div class=\"markdown-body\" style=\"display: none\">\n            " + nothingToPreview + "\n          </div>\n        </div>\n        <footer class=\"new-comment-footer\">\n          <a class=\"text-link markdown-info\" tabindex=\"-1\" target=\"_blank\"\n             href=\"https://guides.github.com/features/mastering-markdown/\">\n            <svg class=\"octicon v-align-bottom\" viewBox=\"0 0 16 16\" version=\"1.1\"\n              width=\"16\" height=\"16\" aria-hidden=\"true\">\n              <path fill-rule=\"evenodd\" d=\"M14.85 3H1.15C.52 3 0 3.52 0 4.15v7.69C0 12.48.52 13 1.15\n                13h13.69c.64 0 1.15-.52 1.15-1.15v-7.7C16 3.52 15.48 3 14.85 3zM9 11H7V8L5.5 9.92 4\n                8v3H2V5h2l1.5 2L7 5h2v6zm2.99.5L9.5 8H11V5h2v3h1.5l-2.51 3.5z\">\n              </path>\n            </svg>\n            Styling with Markdown is supported\n          </a>\n          <button class=\"btn btn-primary\" type=\"submit\">Comment</button>\n          <a class=\"btn btn-primary\" href=\"" + (0, _oauth.getLoginUrl)(_pageAttributes.pageAttributes.url) + "\" target=\"_top\">\n            <svg class=\"octicon\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" width=\"16\" height=\"16\"><path fill-rule=\"evenodd\" d=\"M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z\"></path></svg>\n            Sign in with GitHub\n          </a>\n        </footer>\n      </form>";
+    this.element.innerHTML = "\n      <a class=\"avatar\" target=\"_blank\" tabindex=\"-1\">\n        <img height=\"44\" width=\"44\">\n      </a>\n      <form class=\"comment\" accept-charset=\"UTF-8\" action=\"javascript:\">\n        <header class=\"new-comment-header tabnav\">\n          <div class=\"tabnav-tabs\" role=\"tablist\">\n            <button type=\"button\" class=\"tabnav-tab tab-write\"\n                    role=\"tab\" aria-selected=\"true\">\n              Write\n            </button>\n            <button type=\"button\" class=\"tabnav-tab tab-preview\"\n                    role=\"tab\">\n              Preview\n            </button>\n          </div>\n        </header>\n        <div class=\"comment-body\">\n          <textarea class=\"form-control\" placeholder=\"Leave a comment\" aria-label=\"comment\"></textarea>\n          <div class=\"markdown-body\" style=\"display: none\">\n            ".concat(nothingToPreview, "\n          </div>\n        </div>\n        <footer class=\"new-comment-footer\">\n          <a class=\"text-link markdown-info\" tabindex=\"-1\" target=\"_blank\"\n             href=\"https://guides.github.com/features/mastering-markdown/\">\n            <svg class=\"octicon v-align-bottom\" viewBox=\"0 0 16 16\" version=\"1.1\"\n              width=\"16\" height=\"16\" aria-hidden=\"true\">\n              <path fill-rule=\"evenodd\" d=\"M14.85 3H1.15C.52 3 0 3.52 0 4.15v7.69C0 12.48.52 13 1.15\n                13h13.69c.64 0 1.15-.52 1.15-1.15v-7.7C16 3.52 15.48 3 14.85 3zM9 11H7V8L5.5 9.92 4\n                8v3H2V5h2l1.5 2L7 5h2v6zm2.99.5L9.5 8H11V5h2v3h1.5l-2.51 3.5z\">\n              </path>\n            </svg>\n            Styling with Markdown is supported\n          </a>\n          <button class=\"btn btn-primary\" type=\"submit\">Comment</button>\n          <a class=\"btn btn-primary\" href=\"").concat((0, _oauth.getLoginUrl)(_pageAttributes.pageAttributes.url), "\" target=\"_top\">\n            <svg class=\"octicon\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" width=\"16\" height=\"16\"><path fill-rule=\"evenodd\" d=\"M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z\"></path></svg>\n            Sign in with GitHub\n          </a>\n        </footer>\n      </form>");
     this.avatarAnchor = this.element.firstElementChild;
     this.avatar = this.avatarAnchor.firstElementChild;
     this.form = this.avatarAnchor.nextElementSibling;
@@ -1926,11 +1927,11 @@ function loadTheme(theme, origin) {
     link.rel = 'stylesheet';
     link.setAttribute('crossorigin', 'anonymous');
     link.onload = resolve;
-    link.href = "/stylesheets/themes/" + theme + "/utterances.css";
+    link.href = "/utterances/stylesheets/themes/".concat(theme, "/utterances.css");
     document.head.appendChild(link);
     addEventListener('message', function (event) {
       if (event.origin === origin && event.data.type === 'set-theme') {
-        link.href = "/stylesheets/themes/" + event.data.theme + "/utterances.css";
+        link.href = "/utterances/stylesheets/themes/".concat(event.data.theme, "/utterances.css");
       }
     });
   });
@@ -2191,7 +2192,7 @@ function bootstrap() {
 bootstrap();
 addEventListener('not-installed', function handleNotInstalled() {
   removeEventListener('not-installed', handleNotInstalled);
-  document.querySelector('.timeline').insertAdjacentHTML('afterbegin', "\n  <div class=\"flash flash-error\">\n    Error: utterances is not installed on <code>" + _pageAttributes.pageAttributes.owner + "/" + _pageAttributes.pageAttributes.repo + "</code>.\n    If you own this repo,\n    <a href=\"https://github.com/apps/utterances\" target=\"_top\"><strong>install the app</strong></a>.\n    Read more about this change in\n    <a href=\"https://github.com/utterance/utterances/pull/25\" target=\"_top\">the PR</a>.\n  </div>");
+  document.querySelector('.timeline').insertAdjacentHTML('afterbegin', "\n  <div class=\"flash flash-error\">\n    Error: utterances is not installed on <code>".concat(_pageAttributes.pageAttributes.owner, "/").concat(_pageAttributes.pageAttributes.repo, "</code>.\n    If you own this repo,\n    <a href=\"https://github.com/apps/utterances\" target=\"_top\"><strong>install the app</strong></a>.\n    Read more about this change in\n    <a href=\"https://github.com/utterance/utterances/pull/25\" target=\"_top\">the PR</a>.\n  </div>"));
   (0, _measure.scheduleMeasure)();
 });
 
@@ -2218,7 +2219,7 @@ function renderComments(issue, timeline) {
             pageLoads.push((0, _github.loadCommentsPage)(issue.number, pageCount));
           }
 
-          if (pageCount > 2 && issue.comments % _github.PAGE_SIZE < 3) {
+          if (pageCount > 2 && issue.comments % _github.PAGE_SIZE < 3 && issue.comments % _github.PAGE_SIZE !== 0) {
             pageLoads.push((0, _github.loadCommentsPage)(issue.number, pageCount - 1));
           }
 
@@ -2292,9 +2293,9 @@ function assertOrigin() {
             return [2];
           }
 
-          document.querySelector('.timeline').lastElementChild.insertAdjacentHTML('beforebegin', "\n  <div class=\"flash flash-error flash-not-installed\">\n    Error: <code>" + origin + "</code> is not permitted to post to <code>" + owner + "/" + repo + "</code>.\n    Confirm this is the correct repo for this site's comments. If you own this repo,\n    <a href=\"https://github.com/" + owner + "/" + repo + "/edit/master/utterances.json\" target=\"_top\">\n      <strong>update the utterances.json</strong>\n    </a>\n    to include <code>" + origin + "</code> in the list of origins.<br/><br/>\n    Suggested configuration:<br/>\n    <pre><code>" + JSON.stringify({
+          document.querySelector('.timeline').lastElementChild.insertAdjacentHTML('beforebegin', "\n  <div class=\"flash flash-error flash-not-installed\">\n    Error: <code>".concat(origin, "</code> is not permitted to post to <code>").concat(owner, "/").concat(repo, "</code>.\n    Confirm this is the correct repo for this site's comments. If you own this repo,\n    <a href=\"https://github.com/").concat(owner, "/").concat(repo, "/edit/master/utterances.json\" target=\"_top\">\n      <strong>update the utterances.json</strong>\n    </a>\n    to include <code>").concat(origin, "</code> in the list of origins.<br/><br/>\n    Suggested configuration:<br/>\n    <pre><code>").concat(JSON.stringify({
             origins: [origin]
-          }, null, 2) + "</code></pre>\n  </div>");
+          }, null, 2), "</code></pre>\n  </div>"));
           (0, _measure.scheduleMeasure)();
           throw new Error('Origin not permitted.');
       }
@@ -2302,4 +2303,4 @@ function assertOrigin() {
   });
 }
 },{"./page-attributes":"page-attributes.ts","./github":"github.ts","./timeline-component":"timeline-component.ts","./new-comment-component":"new-comment-component.ts","./measure":"measure.ts","./theme":"theme.ts","./repo-config":"repo-config.ts","./oauth":"oauth.ts","./reactions":"reactions.ts"}]},{},["utterances.ts"], null)
-//# sourceMappingURL=/utterances.74a2fd99.js.map
+//# sourceMappingURL=/utterances/utterances.74a2fd99.js.map
