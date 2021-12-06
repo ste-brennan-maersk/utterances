@@ -4,13 +4,14 @@ export function loadTheme(theme: string, origin: string) {
     link.rel = 'stylesheet';
     link.setAttribute('crossorigin', 'anonymous');
     link.onload = resolve;
-    link.href = `/stylesheets/themes/${theme}/utterances.css`;
+    link.href = `/utterances/stylesheets/themes/${theme}/utterances.css`;
     document.head.appendChild(link);
 
     addEventListener('message', event => {
       if (event.origin === origin && event.data.type === 'set-theme') {
-        link.href = `/stylesheets/themes/${event.data.theme}/utterances.css`;
+        link.href = `/utterances/stylesheets/themes/${event.data.theme}/utterances.css`;
       }
     });
+
   });
 }
